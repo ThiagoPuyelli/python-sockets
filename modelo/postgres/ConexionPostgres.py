@@ -29,7 +29,29 @@ class ConexionPostgres(IConexion):
 
     def ejecutarConsulta(self, consulta: str) -> str:
         """Ejecuta la consulta que llega por parametro"""
-        pass
+        try:
+            if self.conexion is None or self.cursor is None:
+                raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+            
+            self.cursor.execute(consulta)
+            # hago un fetch de los resultados si es un SELECT.
+            if consulta.strip().lower().startswith("select"):
+                rows = self.cursor.fetchall()
+                # formateo los resultados.
+                response = "\n".join([str(row) for row in rows])
+                return response
+            
+            self.conexion.commit()
+            return "consulta ejecutada correctamente!"
+        
+        except psycopg2.Error as err:
+            print(f"Error al ejecutar la consulta: {err}")
+            return f"Error al ejecutar la consulta: {err}"
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Error: {e}"
+
 
     def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
@@ -48,7 +70,17 @@ class ConexionPostgres(IConexion):
 
     def listaDeTablas(self) -> list:
         """Lista las tablas de una determinada BD."""
-        pass
+        try:
+            if self.conexion is None or self.cursor is None:
+                raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+            # obtengo las tablas del catalogo en el cursor.
+            self.cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
+            
+            tables = [row[0] for row in self.cursor.fetchall()]
+            return tables if tables else []
+        except Exception as err:
+            print(f"Error al listar las tablas: {err}")
+            return []
     
 
     def seleccionarBD(self, bd: str) -> bool:
@@ -69,4 +101,4 @@ class ConexionPostgres(IConexion):
             return False
         except Exception as e:
             print(f"Error: {e}")
-            return False            
+            return False

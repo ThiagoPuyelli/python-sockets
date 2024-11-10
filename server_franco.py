@@ -64,10 +64,7 @@ def start_server():
                         response = {"error": "Acción no reconocida"}
                 else:
                     response = {"error": "Falta el atributo 'action' en el JSON"}
-                
-                #response = f"Servidor recibió: {response}"
-                print("sracatunga response!!!")
-                print(response)
+    
                 client_socket.send(json.dumps(response).encode('utf-8'))
             except json.JSONDecodeError:
                 response = {"error": "Formato JSON inválido"}

@@ -79,8 +79,8 @@ def start_client():
                 if (bdElegida == "MONGO"):
                     print("Resultado: " + json.dumps(jsonRes["value"]).replace("\\", ""))
                 else:
-                    # print("Resultado: " + jsonRes["value"])
-                    print("Resultado: " + response)
+                    #print("Resultado: " + jsonRes["value"])
+                    print("Resultado: " + json.dumps(jsonRes["value"]))
             mode = jsonRes["type"]
             value = jsonRes["value"]
 

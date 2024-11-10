@@ -30,11 +30,21 @@ class ConexionSQL(IConexion):
 
    def ejecutarConsulta(self, consulta: str) -> str:
         """Ejecuta la consulta que llega por parametro"""
-        return f"Consulta '{consulta}' ejecutada."
-
+        try:
+            if self.conexion is None or self.cursor is None:
+                raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+            self.cursor.execute(consulta)
+            if consulta.strip().upper().startswith("SELECT"):
+                results = self.cursor.fetchall()  # Fetch all results of the SELECT query
+                return results if results else "No se encontraron resultados."
+            self.conexion.commit()
+            return f"Consulta '{consulta}' ejecutada con éxito."
+        except sql.Error as err:
+            print(f"Error al ejecutar la consulta: {err}")
+            return f"Error al ejecutar la consulta: {err}"
+        	
    def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
-        
         
         try:
              if self.conexion is None or self.cursor is None:
@@ -50,12 +60,30 @@ class ConexionSQL(IConexion):
         except sql.Error as err:  
           return f"Error al listar las bases de datos: {err}"
         
-
-   def listaDeTablas(self) -> str:
+   def listaDeTablas(self) -> list:
         """Lista las tablas de una determinada BD."""
-        return "Lista de tablas."
-
+        try:
+            if self.conexion is None or self.cursor is None:
+                raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+            
+            self.cursor.execute("SHOW TABLES")
+            tables = self.cursor.fetchall()
+            table_list = [table[0] for table in tables]
+            return table_list if table_list else []
+        except sql.Error as err:
+            print(f"Error al listar las tablas: {err}")
+            return []
+            
    def seleccionarBD(self, bd: str) -> bool:
-        """Permite seleccionar la base de datos de un determinado motor."""
-        print(f"Base de datos '{bd}' seleccionada.")
-        return True
+       """Permite seleccionar la base de datos de un determinado motor."""
+       try:
+           if self.conexion is None or self.cursor is None:
+               raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+           self.cursor.execute(f"USE {bd}")
+           self.conexion.commit()  # Commit the transaction
+           print(f"Base de datos '{bd}' seleccionada.")
+           return True
+       except sql.Error as err:
+           print(f"Error al seleccionar la base de datos '{bd}': {err}")
+           return False
+       

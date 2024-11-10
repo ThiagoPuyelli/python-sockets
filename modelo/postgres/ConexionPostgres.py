@@ -49,7 +49,24 @@ class ConexionPostgres(IConexion):
     def listaDeTablas(self) -> list:
         """Lista las tablas de una determinada BD."""
         pass
+    
 
     def seleccionarBD(self, bd: str) -> bool:
         """Permite seleccionar la base de datos de un determinado motor."""
-        pass
+        try:
+            if self.conexion:
+                self.cursor.close()
+                self.conexion.close()
+            #actualizo la bd.
+            self.db_config['dbname'] = bd
+            
+            self.conectar()
+            print(f"Base de datos '{bd}' seleccionada.")
+            return True
+        
+        except psycopg2.OperationalError as err:
+            print(f"Error al seleccionar la base de datos '{bd}': {err}")
+            return False
+        except Exception as e:
+            print(f"Error: {e}")
+            return False            

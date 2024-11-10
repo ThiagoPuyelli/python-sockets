@@ -17,7 +17,7 @@ class IConexion(ABC):
         pass
 
     @abstractmethod
-    def bdRegistradas(self) -> str:
+    def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
         pass
 

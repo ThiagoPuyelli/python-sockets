@@ -1,10 +1,13 @@
 import socket
 import json
+from modelo.mongo.ConexionMongo import ConexionMongo
+
+
 
 def start_server():
     # Configuración del servidor
     server_host = '127.0.0.1'  # IP local
-    server_port = 12345        # Puerto del servidor
+    server_port = 1234       # Puerto del servidor
     buffer_size = 1024         # Tamaño del buffer para recibir datos
 
     # Creación del socket TCP/IP
@@ -36,27 +39,36 @@ def start_server():
                 # Actúa en función de los atributos del JSON
                 if 'action' in data:
                     if data['action'] == 'motor':
-                        motor = seleccionarMotor(message)
+                        print(data)
+                        motor = seleccionarMotor(data["value"])
+                        motor.conectar()
                         response = {"response": {
                             "type": "bds",
-                            "value": "pipo pipa pepe" # motor.getBds()
+                            "value": motor.bdRegistradas() # motor.getBds()
                         }}
                     elif data['action'] == 'bds':
-                        bd = seleccionarBD(message, motor)
-                        response = {"response": bd}
+                        elegido = motor.seleccionarBD(data["value"])
+                        response = {"response": {
+                            "type": "consulta" if elegido else "bds",
+                            "value": motor.listaDeTablas() if elegido else "Base de datos invalida"
+                        }}
                     elif data['action'] == 'consulta':
-                        response = {"response": "Aquí tienes los datos que pediste."}
+                        consulta = motor.ejecutarConsulta(data["value"])
+                        response = {"response": {
+                            "type": "consulta",
+                            "value": consulta
+                        }}
                     else:
                         response = {"error": "Acción no reconocida"}
                 else:
                     response = {"error": "Falta el atributo 'action' en el JSON"}
                 
-                response = f"Servidor recibió: {response}"
-                client_socket.send(response.encode('utf-8'))
+                #response = f"Servidor recibió: {response}"
+                client_socket.send(json.dumps(response).encode('utf-8'))
             except json.JSONDecodeError:
                 response = {"error": "Formato JSON inválido"}
-                response = f"Servidor recibió: {response}"
-                client_socket.send(response.encode('utf-8'))
+                #response = f"Servidor recibió: {response}"
+                client_socket.send(json.dumps(response).encode('utf-8'))
             
     except Exception as e:
         print("Error durante la comunicación:", e)
@@ -65,12 +77,10 @@ def start_server():
         server_socket.close()
         print("Conexión cerrada")
 
+def seleccionarMotor (motor):
+    if (motor == "MONGO"):
+        return ConexionMongo()
+
 if __name__ == "__main__":
     start_server()
 
-
-def seleccionarMotor (message):
-    return "las bases de datos son estas"
-
-def seleccionarBD (message, motor):
-    return "seleccionamo bd"

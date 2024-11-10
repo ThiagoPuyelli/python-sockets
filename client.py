@@ -4,7 +4,7 @@ import json
 def start_client():
     # Configuración del cliente
     server_host = '127.0.0.1'  # IP del servidor (debe coincidir con el servidor)
-    server_port = 12345        # Puerto del servidor (debe coincidir con el servidor)
+    server_port = 1234       # Puerto del servidor (debe coincidir con el servidor)
     buffer_size = 1024         # Tamaño del buffer para recibir datos
 
     # Creación del socket TCP/IP
@@ -14,6 +14,8 @@ def start_client():
     mode = "motor"
     value = ""
     message = ""
+    tablas = ""
+    bdElegida = ""
 
     try:
         while True:
@@ -23,9 +25,25 @@ def start_client():
                 print("1. MongoDB")
                 print("2. PostgreSQL")
                 message = input("Ingrese el motor (o exit si quiere salir): ")
+                bds = ["MONGO", "POSTGRE"]
+                message = bds[int(message) - 1]
+                bdElegida = message
             if (mode == "bds"):
                 print("Elige la base de datos")
-                print()
+                i = 1
+                for x in value:
+                    print(str(i) + ". " + x)
+                    i += 1
+                message = input("Ingrese la base de datos (o exit si quiere salir): ")
+                message = value[int(message) - 1]
+            if (mode == "consulta"):
+                print("Lista de tablas")
+                i = 1
+                for x in tablas:
+                    print(str(i) + ". " + x)
+                    i += 1
+                print("Puede hacer una consulta")
+                message = input("Ingrese la consulta (o exit si quiere salir): ")
 
             if message.lower() == 'exit':
                 print("Cerrando la conexión...")
@@ -41,10 +59,16 @@ def start_client():
             # Recibe la respuesta del servidor
             response = client_socket.recv(buffer_size).decode('utf-8')
             jsonRes = json.loads(response)["response"]
+            if (mode == "bds" and jsonRes["type"] == "consulta"):
+                tablas = jsonRes["value"]
+            elif (mode == "consulta"):
+                if (bdElegida == "MONGO"):
+                    print("Resultado: " + json.dumps(jsonRes["value"]).replace("\\", ""))
+                else:
+                    print("Resultado: " + jsonRes["value"])
             mode = jsonRes["type"]
             value = jsonRes["value"]
 
-            print(f"Respuesta del servidor: {response}")
     except Exception as e:
         print("Error durante la comunicación:", e)
     finally:

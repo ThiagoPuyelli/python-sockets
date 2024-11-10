@@ -24,8 +24,15 @@ def start_client():
                 print("Elige el motor a utilizar")
                 print("1. MongoDB")
                 print("2. PostgreSQL")
+                print("3. MySQL")
                 message = input("Ingrese el motor (o exit si quiere salir): ")
-                bds = ["MONGO", "POSTGRE"]
+                if message.lower() == 'exit':
+                  print("Cerrando la conexión...")
+                  break
+                bds = ["MONGO", "POSTGRE", "MYSQL"]
+                if (message.isdigit() is False or int(message) > len(bds) or int(message) < 1):
+                    print("El motor no es válido")
+                    continue
                 message = bds[int(message) - 1]
                 bdElegida = message
             if (mode == "bds"):
@@ -35,6 +42,12 @@ def start_client():
                     print(str(i) + ". " + x)
                     i += 1
                 message = input("Ingrese la base de datos (o exit si quiere salir): ")
+                if message.lower() == 'exit':
+                  print("Cerrando la conexión...")
+                  break
+                if (message.isdigit() is False or int(message) > len(value) or int(message) < 1):
+                    print("La base de datos no es válida")
+                    continue
                 message = value[int(message) - 1]
             if (mode == "consulta"):
                 print("Lista de tablas")
@@ -44,10 +57,11 @@ def start_client():
                     i += 1
                 print("Puede hacer una consulta")
                 message = input("Ingrese la consulta (o exit si quiere salir): ")
+                if message.lower() == 'exit':
+                  print("Cerrando la conexión...")
+                  break
 
-            if message.lower() == 'exit':
-                print("Cerrando la conexión...")
-                break
+            
 
             # Envía el mensaje al servidor
             message = {

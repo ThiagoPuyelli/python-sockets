@@ -1,5 +1,6 @@
-from modelo import IConexion
-import _mysql_connector
+import mysql.connector as sql
+
+from modelo.IConexion import IConexion
 
 class ConexionSQL(IConexion):
    # Conexion mysql.
@@ -21,7 +22,7 @@ class ConexionSQL(IConexion):
      
      except sql.Error as err:
             print(f"Error al conectar con el motor de la base de datos: {err}")
-            
+
 
    def desconectar(self):
         """Cierra la conexión con la base de datos"""
@@ -31,9 +32,24 @@ class ConexionSQL(IConexion):
         """Ejecuta la consulta que llega por parametro"""
         return f"Consulta '{consulta}' ejecutada."
 
-   def bdRegistradas(self) -> str:
+   def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
-        return "Lista de bases de datos."
+        
+        
+        try:
+             if self.conexion is None or self.cursor is None:
+                  raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
+             
+             self.cursor.execute("SHOW DATABASES") # ejecuto la query y traigo todas la bds.
+             databases = self.cursor.fetchall()  # guardo las bds en una lista
+             
+             db_list = [db[0] for db in databases]  #guardo los nombres en el array.
+             
+             return db_list if db_list else []  
+          
+        except sql.Error as err:  
+          return f"Error al listar las bases de datos: {err}"
+        
 
    def listaDeTablas(self) -> str:
         """Lista las tablas de una determinada BD."""

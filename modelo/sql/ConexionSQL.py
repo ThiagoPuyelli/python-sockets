@@ -23,7 +23,6 @@ class ConexionSQL(IConexion):
      except sql.Error as err:
             print(f"Error al conectar con el motor de la base de datos: {err}")
 
-
    def desconectar(self):
         """Cierra la conexión con la base de datos"""
         print("Desconectado de la base de datos.")

@@ -38,7 +38,7 @@ class ConexionPostgres(IConexion):
             if consulta.strip().lower().startswith("select"):
                 rows = self.cursor.fetchall()
                 # formateo los resultados.
-                response = "\n".join([str(row) for row in rows])
+                response = ",".join([str(row) for row in rows])
                 return response
             
             self.conexion.commit()
@@ -51,8 +51,10 @@ class ConexionPostgres(IConexion):
         except Exception as e:
             print(f"Error: {e}")
             return f"Error: {e}"
-
-
+        
+        finally:
+            self.conectar()
+            
     def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
         try:
@@ -77,7 +79,19 @@ class ConexionPostgres(IConexion):
             self.cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
             
             tables = [row[0] for row in self.cursor.fetchall()]
-            return tables if tables else []
+            
+            # Para cada tabla, obtengo sus columnas.
+            tables_with_columns = []
+            for table in tables:
+            # Obtengo las columnas de la tabla.
+                self.cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}';")
+                columns = [row[0] for row in self.cursor.fetchall()]
+            
+            # Agrego el nombre de la tabla con los atributos entre paréntesis.
+            table_str = f"{table} ({', '.join(columns)})"
+            tables_with_columns.append(table_str)
+            return tables_with_columns if tables else []
+        
         except Exception as err:
             print(f"Error al listar las tablas: {err}")
             return []

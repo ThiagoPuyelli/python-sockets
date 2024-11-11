@@ -2,6 +2,7 @@ import socket
 import json
 from modelo.mongo.ConexionMongo import ConexionMongo
 from modelo.sql.ConexionSQL import ConexionSQL
+from modelo.postgres.ConexionPostgres import ConexionPostgres
 
 
 def start_server():
@@ -13,7 +14,7 @@ def start_server():
     # Creación del socket TCP/IP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((server_host, server_port))
-    server_socket.listen(1)    # Escucha para 1 conexión (ajustable según necesidades)
+    server_socket.listen(2)    # Escucha para 1 conexión (ajustable según necesidades)
 
     print(f"Servidor escuchando en {server_host}:{server_port}")
 
@@ -39,10 +40,7 @@ def start_server():
                 # Actúa en función de los atributos del JSON
                 if 'action' in data:
                     if data['action'] == 'motor':
-                        print(data)
                         motor = seleccionarMotor(data["value"])
-                        print("PEPEPEPEPEPEPEPE")
-                        print(motor)
                         motor.conectar()
                         response = {"response": {
                             "type": "bds",
@@ -79,14 +77,17 @@ def start_server():
         print("Conexión cerrada")
 
 def seleccionarMotor (motor):
-    print("Motor value: " , motor)
     if (motor == "MONGO"):
         return ConexionMongo()
     
     if (motor.lower() == "mysql"):
-        print("saracatunga in")
         return ConexionSQL()
+    
+    if (motor.lower() == "postgre"):
+        print("Sracatnga in!!!!")
+        return ConexionPostgres()
+        
 
 if __name__ == "__main__":
     start_server()
-
+    

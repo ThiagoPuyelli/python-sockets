@@ -61,8 +61,6 @@ def start_client():
                   print("Cerrando la conexión...")
                   break
 
-            
-
             # Envía el mensaje al servidor
             message = {
                 "action": mode,
@@ -79,7 +77,6 @@ def start_client():
                 if (bdElegida == "MONGO"):
                     print("Resultado: " + json.dumps(jsonRes["value"]).replace("\\", ""))
                 else:
-                    #print("Resultado: " + jsonRes["value"])
                     print("Resultado: " + json.dumps(jsonRes["value"]))
             mode = jsonRes["type"]
             value = jsonRes["value"]

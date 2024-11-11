@@ -13,6 +13,7 @@ class ConexionSQL(IConexion):
    def __init__(self):
         self.conexion = None
         self.cursor = None
+        self.bdName = None
    
    def conectar(self):
      try:
@@ -41,6 +42,10 @@ class ConexionSQL(IConexion):
         except sql.Error as err:
             print(f"Error al ejecutar la consulta: {err}")
             return f"Error al ejecutar la consulta: {err}"
+        
+        finally:
+            self.conectar()
+            self.seleccionarBD(self.bdName)
         	
    def bdRegistradas(self) -> list:
         """Lista las bases de datos registradas en un determinado motor."""
@@ -66,9 +71,20 @@ class ConexionSQL(IConexion):
                 raise Exception("La conexión no está establecida. Llame al método 'conectar()' primero.")
             
             self.cursor.execute("SHOW TABLES")
-            tables = self.cursor.fetchall()
-            table_list = [table[0] for table in tables]
-            return table_list if table_list else []
+            tables = [table[0] for table in self.cursor.fetchall()]
+            # Para cada tabla, obtengo sus columnas.
+            tables_with_columns = []
+            for table in tables:
+                # Obtengo las columnas de la tabla.
+                self.cursor.execute(f"SHOW COLUMNS FROM {table}")
+                columns = [row[0] for row in self.cursor.fetchall()]
+            
+                # Agrego el nombre de la tabla con los atributos entre paréntesis.
+                table_str = f"{table} ({', '.join(columns)})"
+                tables_with_columns.append(table_str)
+
+            return tables_with_columns if tables_with_columns else []
+            
         except sql.Error as err:
             print(f"Error al listar las tablas: {err}")
             return []
@@ -81,8 +97,8 @@ class ConexionSQL(IConexion):
            self.cursor.execute(f"USE {bd}")
            self.conexion.commit()  # Commit the transaction
            print(f"Base de datos '{bd}' seleccionada.")
+           self.bdName = bd
            return True
        except sql.Error as err:
            print(f"Error al seleccionar la base de datos '{bd}': {err}")
            return False
-       
